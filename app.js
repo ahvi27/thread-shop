@@ -1,4 +1,34 @@
 'use strict';
+const systemTheme=window.matchMedia('(prefers-color-scheme: dark)');
+let themePreference;
+try{themePreference=localStorage.getItem('thread-theme')}catch{}
+if(!['light','dark'].includes(themePreference))themePreference=null;
+const themeToggle=document.createElement('button');
+themeToggle.type='button';
+themeToggle.className='theme-toggle';
+themeToggle.textContent='\u263e';
+themeToggle.setAttribute('aria-label','Dark mode');
+document.getElementById('openCart').before(themeToggle);
+function applyTheme(){
+  const dark=themePreference?themePreference==='dark':systemTheme.matches;
+  document.documentElement.dataset.theme=dark?'dark':'light';
+  themeToggle.setAttribute('aria-pressed',String(dark));
+  themeToggle.title=dark?'Switch to light mode':'Switch to dark mode';
+  themeToggle.textContent=dark?'\u2600':'\u263e';
+}
+themeToggle.onclick=()=>{
+  themePreference=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  try{localStorage.setItem('thread-theme',themePreference)}catch{}
+  applyTheme();
+};
+systemTheme.addEventListener('change',applyTheme);
+window.addEventListener('storage',event=>{
+  if(event.key==='thread-theme'||event.key===null){
+    themePreference=['light','dark'].includes(event.newValue)?event.newValue:null;
+    applyTheme();
+  }
+});
+applyTheme();
 const products=[{id:1,name:'Everyday White Tee',category:'Tops',price:24,img:'white',tag:'ESSENTIAL',detail:'White · Relaxed fit'},{id:2,name:'City Denim Layer',category:'Layers',price:68,img:'denim',tag:'THE EDIT',detail:'Light blue · Easy layering'},{id:3,name:'Graphic Tee Duo',category:'Tops',price:42,img:'dark',tag:'TWO PACK',detail:'Black & gray · Everyday fit'},{id:4,name:'Weekend White Tee',category:'Tops',price:29,img:'white',tag:'RELAXED',detail:'White · Weekend staple'}];
 let category='All',cart=[];const $=id=>document.getElementById(id),money=n=>'$'+n.toFixed(2);try{const saved=JSON.parse(localStorage.getItem('thread-cart'));if(Array.isArray(saved))cart=saved.filter(x=>products.some(p=>p.id===x.id)&&['S','M','L','XL'].includes(x.size)&&Number.isInteger(x.qty)&&x.qty>0).map(x=>({...x,qty:Math.min(99,x.qty)}))}catch{}
 function node(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}function image(p){const img=node('img');img.src='images/'+p.img+'.jpg';img.alt=p.name+' — illustrative clothing photo';img.loading='lazy';return img}function toast(text){$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),2800)}
